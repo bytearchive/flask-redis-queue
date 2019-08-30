@@ -3,12 +3,14 @@ version: '3.7'
 services:
 
   web:
-    build: .
-    image: web
-    container_name: web
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: web_app
+    image: web_app:latest
     ports:
-      - '5004:5000'
-    command: python manage.py run -h 0.0.0.0
+      - '80:80'
+    command: python manage.py run -h 0.0.0.0 -p 80
     volumes:
       - .:/usr/src/app
     environment:
@@ -18,17 +20,18 @@ services:
       - redis
 
   worker:
-    image: web
+    image: web_app:latest
     command: python manage.py run_worker
     volumes:
       - .:/usr/src/app
     environment:
       - APP_SETTINGS=project.server.config.DevelopmentConfig
     depends_on:
+      - web
       - redis
 
   redis:
-    image: redis:4.0.11-alpine
+    image: redis:5.0.5-alpine
 
   dashboard:
     build: ./project/dashboard
